@@ -1,29 +1,40 @@
 [![pkg.go.dev](https://godoc.org/github.com/j-keck/arping?status.svg)](https://pkg.go.dev/github.com/j-keck/arping)
 
-# arping
+# Arping
 
-arping is a native go library to ping a host per arp datagram, or query a host mac address
+Arping is a native go library for sending and receiving ARP datagrams on Linux and BSD systems.
 
-The currently supported platforms are: Linux and BSD.
-
+It can be used to resolve MAC addresses and broadcast gratuitous ARPs.
 
 ## Usage
-### arping library
 
-* import this library per `import "github.com/j-keck/arping"`
-* export GOPATH if not already (`export GOPATH=$PWD`)
-* download the library `go get`
-* run it `sudo -E go run <YOUR PROGRAM>`
-* or build it `go build`
+```shell
+go get github.com/j-keck/arping
+```
 
+```go
+import (
+	"log"
+	"net"
 
-The library requires raw socket access. So it must run as root, or with appropriate capabilities under linux: `sudo setcap cap_net_raw+ep <BIN>`.
+	"github.com/j-keck/arping"
+)
 
-For api doc and examples see: [godoc](http://godoc.org/github.com/j-keck/arping) or check the standalone under 'cmd/arping/main.go'.
+func main() {
+	dstIP := net.ParseIP("192.168.1.1")
+	if hwAddr, duration, err := arping.Ping(dstIP); err != nil {
+		log.Fatal(err)
+	} else {
+		log.Printf("%s (%s) %d usec\n", dstIP, hwAddr, duration/1000)
+	}
+}
+```
 
+The library requires raw socket access. It must run as root, or with appropriate capabilities under linux:
+```shell
+sudo setcap cap_net_raw+ep <BIN>
+```
 
-### arping executable
+## Binary
 
-To get a runnable pinger use `go get -u github.com/j-keck/arping/cmd/arping`. This will build the binary in $GOPATH/bin.
-
-arping requires raw socket access. So it must run as root, or with appropriate capabilities under Linux: `sudo setcap cap_net_raw+ep <ARPING_PATH>`.
+A binary is provided in `cmd/arping` that broadcasts an ARP request for the provided address and display information about the response.
